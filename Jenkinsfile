@@ -1,39 +1,41 @@
 pipeline {
     agent any
-    tools{
-        maven 'maven_3_5_0'
+    tools {
+        maven 'maven-3.6.3'
     }
-    stages{
-        stage('Build Maven'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Java-Techie-jt/devops-automation']]])
-                sh 'mvn clean install'
-            }
-        }
-        stage('Build docker image'){
-            steps{
-                script{
-                    sh 'docker build -t javatechie/devops-integration .'
-                }
-            }
-        }
-        stage('Push image to Hub'){
-            steps{
-                script{
-                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-                   sh 'docker login -u javatechie -p ${dockerhubpwd}'
+    stages {
+        stage("build jar") {
+            steps {
+                script {
+                    echo "Building The Application"
+                    sh 'mvn package'
 
-}
-                   sh 'docker push javatechie/devops-integration'
                 }
             }
         }
-        stage('Deploy to k8s'){
-            steps{
-                script{
-                    kubernetesDeploy (configs: 'deploymentservice.yaml',kubeconfigId: 'k8sconfigpwd')
+
+        stage("build image") {
+            steps {
+                script {
+                    echo "Building The Image"
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-repo', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                        sh 'docker build -t snehagunda1/demoapp:bookstoreapp-1.0 .'
+                        sh "docker login -u $USERNAME -p $PASSWORD"
+                        sh ' docker push snehagunda1/demoapp:bookstoreapp-1.0'
+
                 }
             }
         }
-    }
+        }
+        stage("Deploy") {
+            steps {
+                script {
+
+                    echo "Deploying The Application"
+
+                }
+            }
+        }
+
+     }
 }
