@@ -1,13 +1,4 @@
-FROM tomcat:8.0-alpine
-#RUN mkdir -p /home/java_app
-#WORKDIR /home/java_app
-#COPY . /home/java_app
-
- 
-
+FROM openjdk:8
 EXPOSE 8080
-ADD target/*.war /usr/local/tomcat/webapps/
-
- 
-
-CMD [ "catalina.sh", "run" ]
+ADD target/devops-integration.jar devops-integration.jar
+ENTRYPOINT ["java","-jar","/devops-integration.jar"]
